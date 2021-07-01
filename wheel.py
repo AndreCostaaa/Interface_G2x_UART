@@ -1,5 +1,5 @@
 from pygame.joystick import Joystick
-import pygame
+from constants import *
 import math
 
 HAT_DIRECTION_UP = 'N'
@@ -165,13 +165,14 @@ class Wheel(x):
         x.__init__(self)
         super().init()
         self.explicit_data = {  
-                            "axis": [0 for i in range(super().get_numaxes())],
-                            "buttons": [0 for i in range(super().get_numbuttons())],
-                            "hats": [0 for i in range(super().get_numhats())]}
+                            DIC_KEY_AXIS: [0 for i in range(super().get_numaxes())],
+                            DIC_KEY_BUTTON: [0 for i in range(super().get_numbuttons())],
+                            DIC_KEY_HAT: [0 for i in range(super().get_numhats())]}
+
         self.compact_data = {
-                            "axis": [0 for i in range(super().get_numaxes())],
-                            "buttons": [0 for i in range(int(math.ceil(super().get_numbuttons() / 8)))],
-                            "hats": [0 for i in range(int(math.ceil(super().get_numhats() / 2)))]
+                            DIC_KEY_AXIS: [0 for i in range(super().get_numaxes())],
+                            DIC_KEY_BUTTON: [0 for i in range(int(math.ceil(super().get_numbuttons() / 8)))],
+                            DIC_KEY_HAT: [0 for i in range(int(math.ceil(super().get_numhats() / 2)))]
                             }  
 
     def get_buttons(self):
@@ -183,9 +184,9 @@ class Wheel(x):
             if data:
                 value |= mask
             mask <<= 1
-            self.explicit_data["buttons"][i] = data
-        for i in range(len(self.compact_data["buttons"])):
-            self.compact_data["buttons"][i] = (value & (0xFF << i * 8)) >> i*8
+            self.explicit_data[DIC_KEY_BUTTON][i] = data
+        for i in range(len(self.compact_data[DIC_KEY_BUTTON])):
+            self.compact_data[DIC_KEY_BUTTON][i] = (value & (0xFF << i * 8)) >> i*8
 
 
     def get_hat(self, num_hat):
@@ -215,17 +216,17 @@ class Wheel(x):
             data, direction = self.get_hat(i)
             value |= data
             value <<= 4
-            self.explicit_data["hats"][i] = direction
+            self.explicit_data[DIC_KEY_HAT][i] = direction
 
-        for i in range(len(self.compact_data["hats"])):
-            self.compact_data["hats"][i] = (value & (0xFF << i * 8)) >> i*8
+        for i in range(len(self.compact_data[DIC_KEY_HAT])):
+            self.compact_data[DIC_KEY_HAT][i] = (value & (0xFF << i * 8)) >> i*8
 
     def get_axes(self):
         for i in range(self.get_numaxes()):
             val = super().get_axis(i)
             val = int((val + 1) * (0xFF /2))
-            self.explicit_data["axis"][i] = val
-            self.compact_data["axis"][i] = val
+            self.explicit_data[DIC_KEY_AXIS][i] = val
+            self.compact_data[DIC_KEY_AXIS][i] = val
     
     
     def read_data_input(self):

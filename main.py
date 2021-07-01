@@ -1,5 +1,8 @@
 import pygame
 import sys
+import time
+import threading
+
 from wheel import Wheel
 from transmission import Transmission
 class main:
@@ -7,10 +10,7 @@ class main:
         
         self.wheel = Wheel()
         self.transmission = Transmission()
-        self.wheel.read_data_input()
-        self.transmission.build_payload(self.wheel)
-        self.transmission.send_payload(1)
-        #self.run()
+        self.run()
 
     def run(self):
         while True:
@@ -18,6 +18,12 @@ class main:
                 if event.type == pygame.QUIT:
                     sys.exit()
 
+            if self.transmission.check_new_data():
+                data = self.transmission.read_data()
+                if not self.transmission.treat_data_in(data, self.wheel) < 0:
+                    self.transmission.send_ack()
+
+            self.transmission.handle_transmission(pygame.time.get_ticks(), self.wheel)
 
 
 if __name__ == "__main__":
