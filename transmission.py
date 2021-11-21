@@ -15,9 +15,12 @@ TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION = 5000
 
 ACK = [6]
 NACK = [21]
+
+MIN_FREQUENCY = 0.2 # 5 seconds
+MAX_FREQUENCY = 1000 # 10 ms
 class Transmission:
-    def __init__(self):
-        
+
+    def __init__(self):    
         self.state = S_WAITING
         self.mode = M_AUTO
         self.type = T_EXPLICIT
@@ -29,7 +32,7 @@ class Transmission:
         self.data_was_requested = False
         self.data_tram = []
 
-        self.serial = serial.Serial("COM28", 115200)
+        self.serial = serial.Serial("COM4", 115200)
         self.serial.flush()
 
         self.payload = WAITING_OCTET
@@ -53,6 +56,7 @@ class Transmission:
 
     def handle_transmission(self, time_now, wheel):            
         if self.state == S_WAITING and time_now - self.last_information_sent >= TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION:
+                print("Waiting for Connection")
                 self.payload = WAITING_OCTET
                 self.send_payload()
         elif self.state == S_TRANSMITTING:
@@ -92,7 +96,7 @@ class Transmission:
         if chr(data[-1]) != '\n':
             self.bad_data("no LF")
             return -1
-        if not len(data) -2 > 2:
+        if len(data) -2 <= 2:
             self.bad_data("missing args")
             return -1
         
@@ -103,9 +107,11 @@ class Transmission:
         if not cmd in VALID_COMMANDS:
             self.bad_data("invalid cmd")
             return -1
+
         if not cmd_detail in VALID_COMMAND_DETAIL[cmd]:
             self.bad_data("invalid cmd detail")
             return -1
+
         if cmd == SET:
             if cmd_detail == MODE:
                 if DEBUG:
@@ -143,11 +149,19 @@ class Transmission:
                 data_size_left = len(data) - 4
                 freq = 0
                 
-                #TODO Make it that if we get 0001, f = 0.001
                 for i in range(data_size_left):
                     freq += (int(data[i +2]) - ord('0')) * (10 ** (data_size_left - i - 1))
 
-                self.time_between_comms = 1 / freq *1000 #ms
+                #If we receive if we get 0001, f = 0.001
+                if data[2] - ord('0') == 0:
+                    freq /= 10 ** data_size_left
+                
+                if freq == 0:
+                    self.time_between_comms = 1 / MIN_FREQUENCY
+                elif freq > MAX_FREQUENCY:
+                    self.time_between_comms = 1 / MAX_FREQUENCY
+                else:
+                    self.time_between_comms = 1 / freq *1000 #ms
 
                 if DEBUG:
                     print(f"to the frequency {freq} Hz\n{self.time_between_comms=}")
@@ -164,10 +178,8 @@ class Transmission:
                         self.payload += cmd_detail.upper() + str(i) + str(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
             else:
                 if self.type == T_COMPACT:
-
                     #small trick: if we send 0, nothing gets sent. if we send something other than 0. 0x00 gets sent
-                    #to sen
-                    # d a custom byte we must send it like this [0xFF] instead of 0xFF. (weird ik)
+                    #to send a custom byte we must send it like this [0xFF] instead of 0xFF. (weird ik)
                     if wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][int(data[2])] == 0:
                         self.payload = 0
                     else:
