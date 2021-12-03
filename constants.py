@@ -20,6 +20,8 @@ AXIS = 'A'
 BUTTONS = 'B'
 HAT = 'H'
 
+ALL = 'Z'
+
 DIC_KEY_AXIS = "axes"
 DIC_KEY_BUTTON = "buttons"
 DIC_KEY_HAT = "hats"

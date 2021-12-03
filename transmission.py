@@ -1,5 +1,6 @@
 import serial
 from constants import *
+
 MAX_PAYLOAD_SIZE = 50
 
 S_WAITING = 0
@@ -13,11 +14,20 @@ T_EXPLICIT = 1
 
 TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION = 5000
 
+START_CHAR = ':'
+END_CHAR = '\n'
+
+CMD_POSITION = 1
+CMD_DETAIL_POSITION = CMD_POSITION +1
+FIRST_ARG_POSITION = CMD_DETAIL_POSITION +1
+
 ACK = [6]
 NACK = [21]
 
 MIN_FREQUENCY = 0.2 # 5 seconds
 MAX_FREQUENCY = 1000 # 10 ms
+
+
 class Transmission:
 
     def __init__(self):    
@@ -92,40 +102,45 @@ class Transmission:
         return self.serial.readline() 
     
     def treat_data_in(self, data, wheel):
+        
+        if not self.is_valid_start(data):
+            self.log_error("bad start")
 
-        if chr(data[-1]) != '\n':
-            self.bad_data("no LF")
+        if not self.is_valid_end(data):
+            self.log_error("bad end")
             return -1
-        if len(data) -2 <= 2:
-            self.bad_data("missing args")
+
+        if not self.is_valid_size(data):
+            self.log_error("missing args")
             return -1
         
-        
-        cmd = chr(data[0]).upper()
-        cmd_detail = chr(data[1]).upper()
+        cmd, cmd_detail = (chr(data[CMD_POSITION]).upper(), chr(data[CMD_DETAIL_POSITION]).upper())
 
         if not cmd in VALID_COMMANDS:
-            self.bad_data("invalid cmd")
+            self.log_error("invalid cmd")
             return -1
 
         if not cmd_detail in VALID_COMMAND_DETAIL[cmd]:
-            self.bad_data("invalid cmd detail")
+            self.log_error("invalid cmd detail")
             return -1
 
+        argument_lst = self.get_args(data)
         if cmd == SET:
             if cmd_detail == MODE:
                 if DEBUG:
                     print(f"Changing mode: from {self.mode=}",end=" ")
 
-                if chr(data[2]).upper() == AUTO:
+                arg = chr(argument_lst[0]).upper()
+                if arg == AUTO:
                     self.mode = M_AUTO
                     self.state = S_TRANSMITTING
-                elif chr(data[2]).upper() == ON_REQUEST:
+                elif arg == ON_REQUEST:
                     self.mode = M_ON_REQUEST
                     self.state = S_TRANSMITTING
                 else:
-                    self.bad_data("invalid mode")
+                    self.log_error("invalid mode")
                     return -1
+
                 if DEBUG:
                     print(f"to {self.mode=}")
 
@@ -133,28 +148,33 @@ class Transmission:
                 if DEBUG:
                     print(f"Changing type: from {self.type=}",end=" ")
 
-                if chr(data[2]).upper() == EXPLICIT:
+                arg = chr(argument_lst[0]).upper()
+
+                if arg == EXPLICIT:
                     self.type = T_EXPLICIT
-                elif chr(data[2]).upper() == COMPACT:
+                elif arg == COMPACT:
                     self.type = T_COMPACT
                 else:
-                    self.bad_data("invalid type")
+                    self.log_error("invalid type")
                     return -1
+
                 if DEBUG:
                     print(f"to {self.type=}")
+
             elif cmd_detail == SPEED:
                 if DEBUG:
                     print(f"Changing speed: from {1 / self.time_between_comms * 1000} Hz",end=" ")
                 
-                data_size_left = len(data) - 4
+                arg_lst_len = len(argument_lst)
                 freq = 0
                 
-                for i in range(data_size_left):
-                    freq += (int(data[i +2]) - ord('0')) * (10 ** (data_size_left - i - 1))
+                for i in argument_lst:
+                    i = int(i)
+                    freq += (i - ord('0')) * (10 ** (arg_lst_len - i - 1))
 
                 #If we receive if we get 0001, f = 0.001
-                if data[2] - ord('0') == 0:
-                    freq /= 10 ** data_size_left
+                if argument_lst[0] - ord('0') == 0:
+                    freq /= 10 ** arg_lst_len
                 
                 if freq == 0:
                     self.time_between_comms = 1 / MIN_FREQUENCY
@@ -167,38 +187,32 @@ class Transmission:
                     print(f"to the frequency {freq} Hz\n{self.time_between_comms=}")
 
         elif cmd == GET and self.mode == M_ON_REQUEST:
-            if data[2] == 0xFF:
-                if self.type == T_COMPACT:
-                    self.payload = bytearray()
-                    for i in range(len(wheel.compact_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
-                        self.payload.append(wheel.compact_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])
-                elif self.type == T_EXPLICIT:
-                    self.payload = ""
-                    for i in range(len(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
-                        self.payload += cmd_detail.upper() + str(i) + str(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
-            else:
-                if self.type == T_COMPACT:
-                    #small trick: if we send 0, nothing gets sent. if we send something other than 0. 0x00 gets sent
-                    #to send a custom byte we must send it like this [0xFF] instead of 0xFF. (weird ik)
-                    if wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][int(data[2])] == 0:
-                        self.payload = 0
-                    else:
-                        self.payload = [wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][int(data[2])]]
-                elif self.type == T_EXPLICIT:
-                    self.payload = ""
-                    #self.payload = cmd_detail.upper() + str(int(data[2])) + str(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][int(data[2])])
-                    self.payload = cmd_detail.upper()
-                    self.payload += str(int(data[2]))
-                    self.payload += str(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][int(data[2])])
+
+            if argument_lst[0] == '9':
+
+                if DEBUG:
+                    print(f"Getting all {DATA_FROM_COMMANDS_DIC[cmd_detail]}")
+
+                self.payload = cmd_detail.upper() + ALL
+                
+                for i in range(len(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
+                    self.payload += str(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
+            else:                   
+                
+                index_str = ''.join(argument_lst)
+                index = int(index_str)
+                self.payload = cmd_detail.upper() = index_str
+                self.payload += str(wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index])
 
             self.data_was_requested = True
  
         else:
-            self.bad_data("mode is auto")
+            self.log_error("mode is auto")
             return -1
         return 0
 
-    def bad_data(self, detail):
+    
+    def log_error(self, detail):
         data = "ERROR " + detail       
         if DEBUG:
             print(data)
@@ -207,4 +221,22 @@ class Transmission:
     def send_ack(self):
         self.serial.write(ACK)
 
+    @staticmethod
+    def is_valid_start(data):
+        return data[0] == START_CHAR
 
+    @staticmethod
+    def is_valid_end(data):
+        return data[-1] == END_CHAR
+    
+    @staticmethod
+    def is_valid_size(data):
+        return len(data) - 2 > 2
+
+    @staticmethod
+    def get_argument_index(argument_number):
+        return FIRST_ARG_POSITION + argument_number
+    
+    @staticmethod
+    def get_args(data):
+        return data[FIRST_ARG_POSITION: -1]
