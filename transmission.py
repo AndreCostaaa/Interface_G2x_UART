@@ -226,11 +226,11 @@ class Transmission:
 
     @staticmethod
     def _is_valid_start(data):
-        return chr(data[0]) == START_CHAR
+        return data[0] == START_CHAR
 
     @staticmethod
     def _is_valid_end(data):
-        return chr(data[-1]) == END_CHAR
+        return data[-1] == END_CHAR
     
     @staticmethod
     def _is_valid_size(data):
@@ -242,4 +242,4 @@ class Transmission:
     
     @staticmethod
     def _get_args(data):
-        return str(data[FIRST_ARG_POSITION: -1])
+        return data[FIRST_ARG_POSITION: -1].decode('ascii')
