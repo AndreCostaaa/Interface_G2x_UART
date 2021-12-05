@@ -169,8 +169,7 @@ class Wheel:
     def __init__(self):
         #self.__joystick.__init__(0)
         #self.__joystick.init()
-        if not pygame.joystick.get_init():
-            pygame.joystick.init()
+        pygame.joystick.init()
 
         self.__joystick = Joystick(0)
 
