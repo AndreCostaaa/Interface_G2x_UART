@@ -206,8 +206,8 @@ class Transmission:
                 index_str = ''.join(argument_lst)
                 index = int(index_str)
                 self.payload = cmd_detail.upper() + index_str
-                self.payload += str(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index])
-
+                self.payload += self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+                print("Detail: " + self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index])
             self.is_data_requested = True
         else:
             self._log_error("mode is auto")
