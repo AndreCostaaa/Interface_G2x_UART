@@ -242,4 +242,4 @@ class Transmission:
     
     @staticmethod
     def _get_args(data):
-        return data[FIRST_ARG_POSITION: -1]
+        return str(data[FIRST_ARG_POSITION: -1])
