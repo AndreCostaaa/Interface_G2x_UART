@@ -107,6 +107,8 @@ class Transmission:
     def _treat_data_in(self, data):
         if DEBUG:
             print("Treating Data: " + str(data))
+
+        
         if not self._is_valid_start(data):
             self._log_error("bad start")
 
@@ -204,8 +206,7 @@ class Transmission:
             else:           
                 index_str = ''.join(argument_lst)
                 index = int(index_str)
-                print(index_str)
-                self.payload = cmd_detail.upper() + self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+                self.payload = cmd_detail.upper() + index_str +  self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
             self.is_data_requested = True
         else:
             self._log_error("mode is auto")
@@ -240,4 +241,4 @@ class Transmission:
     
     @staticmethod
     def _get_args(data):
-        return data[FIRST_ARG_POSITION: -1]
+        return data[FIRST_ARG_POSITION: -2 if data[-2] == '\r' else -1]
