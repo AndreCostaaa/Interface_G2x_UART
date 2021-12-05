@@ -52,9 +52,9 @@ class Transmission:
 
         if self.type == T_EXPLICIT:
             payload = ""
-            for key in self.wheel.explicit_data.keys():
-                for i in range(len(self.wheel.explicit_data[key])):
-                    payload += key[0].upper() + str(i) + str(self.wheel.explicit_data[key][i])
+            for key in self.wheel._explicit_data.keys():
+                for i in range(len(self.wheel._explicit_data[key])):
+                    payload += key[0].upper() + str(i) + str(self.wheel._explicit_data[key][i])
             
         if self.type == T_COMPACT:
             payload = bytearray()
@@ -65,7 +65,7 @@ class Transmission:
         self.payload = payload
 
     def handle_transmission(self, time_now):
-        
+        self.wheel.read_all()
         if self._is_new_data():
             self._treat_data_in(self._read_data()) 
         send_payload = False 
@@ -199,15 +199,15 @@ class Transmission:
 
                 self.payload = cmd_detail.upper() + ALL
                 
-                for i in range(len(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
-                    self.payload += str(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
+                for i in range(len(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
+                    self.payload += str(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
             else:           
                 index_str = ''.join(argument_lst)
                 index = int(index_str)
-                self.payload = cmd_detail.upper() + index_str + self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
-                print(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])
+                self.payload = cmd_detail.upper() + index_str + self.wheel.__explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+                print(self.wheel.__explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])
 
-                #self.payload += self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+                #self.payload += self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
             self.is_data_requested = True
         else:
             self._log_error("mode is auto")

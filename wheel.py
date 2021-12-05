@@ -173,12 +173,12 @@ class Wheel:
         
         self.__joystick = Joystick(0)
         self.__joystick.init()
-        self.explicit_data = {  
+        self._explicit_data = {  
                             DIC_KEY_AXIS: ["0" for _ in range(self.__joystick.get_numaxes())],
                             DIC_KEY_BUTTON: ["0" for _ in range(self.__joystick.get_numbuttons())],
                             DIC_KEY_HAT: ["0" for _ in range(self.__joystick.get_numhats())]}
 
-        self.compact_data = {
+        self._compact_data = {
                             DIC_KEY_AXIS: [0 for _ in range(self.__joystick.get_numaxes())],
                             DIC_KEY_BUTTON: [0 for _ in range(int(math.ceil(self.__joystick.get_numbuttons() / 8)))],
                             DIC_KEY_HAT: [0 for _ in range(int(math.ceil(self.__joystick.get_numhats() / 2)))]
@@ -193,13 +193,13 @@ class Wheel:
             if data:
                 value |= mask
             mask <<= 1
-            self.explicit_data[DIC_KEY_BUTTON][i] = str(data)
-        for i in range(len(self.compact_data[DIC_KEY_BUTTON])):
-            self.compact_data[DIC_KEY_BUTTON][i] = (value & (0xFF << i * 8)) >> i*8
+            self._explicit_data[DIC_KEY_BUTTON][i] = str(data)
+        for i in range(len(self._compact_data[DIC_KEY_BUTTON])):
+            self._compact_data[DIC_KEY_BUTTON][i] = (value & (0xFF << i * 8)) >> i*8
             
     def get_buttons(self):
         self.read_buttons()
-        return self.explicit_data[DIC_KEY_BUTTON]
+        return self._explicit_data[DIC_KEY_BUTTON]
 
 
     def get_hat(self, num_hat):
@@ -232,31 +232,29 @@ class Wheel:
             data, direction = self.get_hat(i)
             value |= data
             value <<= 4
-            self.explicit_data[DIC_KEY_HAT][i] = str(direction)
+            self._explicit_data[DIC_KEY_HAT][i] = str(direction)
 
-        for i in range(len(self.compact_data[DIC_KEY_HAT])):
-            self.compact_data[DIC_KEY_HAT][i] = (value & (0xFF << i * 8)) >> i*8
+        for i in range(len(self._compact_data[DIC_KEY_HAT])):
+            self._compact_data[DIC_KEY_HAT][i] = (value & (0xFF << i * 8)) >> i*8
 
     def get_hats(self):
         self.read_hats()
-        return self.explicit_data[DIC_KEY_HAT]
+        return self._explicit_data[DIC_KEY_HAT]
 
 
     def read_axes(self):
         for i in range(self.__joystick.get_numaxes()):
             val = self.__joystick.get_axis(i)
             val = int((val + 1) * (0xFF /2))
-            self.explicit_data[DIC_KEY_AXIS][i] = str(val)
-            self.compact_data[DIC_KEY_AXIS][i] = val
+            self._explicit_data[DIC_KEY_AXIS][i] = str(val)
+            self._compact_data[DIC_KEY_AXIS][i] = val
             
     def get_axes(self):
         self.read_axes()
-        return self.explicit_data[DIC_KEY_AXIS]
+        return self._explicit_data[DIC_KEY_AXIS]
     
     
-    def read_data_input(self):
+    def read_all(self):
         self.get_hats()
         self.get_axes()
         self.get_buttons()
-    
-    

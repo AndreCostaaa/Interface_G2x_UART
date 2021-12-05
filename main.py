@@ -18,9 +18,9 @@ class main:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-
-            self.transmission.handle_transmission(pygame.time.get_ticks())
             
+            self.transmission.handle_transmission(pygame.time.get_ticks())
+
 if __name__ == "__main__":
     os.putenv('DISPLAY', ':0.0')
     pygame.init()
