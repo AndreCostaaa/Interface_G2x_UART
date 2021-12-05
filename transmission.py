@@ -106,7 +106,7 @@ class Transmission:
     
     def _treat_data_in(self, data):
         if DEBUG:
-            print("Treating Data: " + data)
+            print("Treating Data: " + str(data))
         if not self._is_valid_start(data):
             self._log_error("bad start")
 
@@ -225,11 +225,11 @@ class Transmission:
 
     @staticmethod
     def _is_valid_start(data):
-        return data[0] == START_CHAR
+        return chr(data[0]) == START_CHAR
 
     @staticmethod
     def _is_valid_end(data):
-        return data[-1] == END_CHAR
+        return chr(data[-1]) == END_CHAR
     
     @staticmethod
     def _is_valid_size(data):
