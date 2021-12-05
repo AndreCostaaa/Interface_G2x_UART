@@ -65,9 +65,11 @@ class Transmission:
         self.payload = payload
 
     def handle_transmission(self, time_now):
+        
         if self._is_new_data():
-            self._treat_data_in(self._read_data())
-        send_payload = False            
+            self._treat_data_in(self._read_data()) 
+        send_payload = False 
+                   
         if self.state == S_WAITING and time_now - self.last_information_sent >= TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION:
                 print("Waiting for Connection")
                 self.payload = WAITING_OCTET
