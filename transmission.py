@@ -102,7 +102,7 @@ class Transmission:
     
     def _read_data(self):
         #waiting for the /n. Code will be blocked here for 1 sec max if we don't get it
-        return self.serial.readline() 
+        return self.serial.readline().decode('ascii')
     
     def _treat_data_in(self, data):
         if DEBUG:
@@ -242,4 +242,4 @@ class Transmission:
     
     @staticmethod
     def _get_args(data):
-        return data[FIRST_ARG_POSITION: -1].decode('ascii')
+        return data[FIRST_ARG_POSITION: -1]
