@@ -118,7 +118,7 @@ class Transmission:
             self._log_error("missing args")
             return -1
         
-        cmd, cmd_detail = (chr(data[CMD_POSITION]).upper(), chr(data[CMD_DETAIL_POSITION]).upper())
+        cmd, cmd_detail = data[CMD_POSITION].upper(), data[CMD_DETAIL_POSITION].upper()
 
         if not cmd in VALID_COMMANDS:
             self._log_error("invalid cmd")
