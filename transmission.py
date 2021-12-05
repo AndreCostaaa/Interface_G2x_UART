@@ -90,12 +90,12 @@ class Transmission:
             self.last_information_sent = time_now
 
     def _send_payload(self):
+        self.payload += '\n'
         if type(self.payload) == str:
             self.payload = self.payload.encode('ascii')
         if DEBUG:
             print(f"Sending payload: {self.payload=}")
         self.serial.write(self.payload)
-        self.serial.write(b"\r\n")
     
     def _is_new_data(self):
         return self.serial.in_waiting > 0
@@ -204,10 +204,7 @@ class Transmission:
             else:           
                 index_str = ''.join(argument_lst)
                 index = int(index_str)
-                self.payload = cmd_detail.upper() + index_str + self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
-                print(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])
-
-                #self.payload += self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+                self.payload = cmd_detail.upper() + index_str + "test" + self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
             self.is_data_requested = True
         else:
             self._log_error("mode is auto")
