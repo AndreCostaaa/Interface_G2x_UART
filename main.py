@@ -23,5 +23,6 @@ class main:
 
 if __name__ == "__main__":
     pygame.init()
+    pygame.display.set_mode((1, 1))
     pygame.joystick.init()
     main()
