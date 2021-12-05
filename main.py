@@ -22,8 +22,5 @@ class main:
             self.transmission.handle_transmission()
 
 if __name__ == "__main__":
-    os.putenv('DISPLAY', ':0.0') 
     pygame.init()
-    pygame.display.set_mode((1, 1))
-    pygame.joystick.init()
     main()

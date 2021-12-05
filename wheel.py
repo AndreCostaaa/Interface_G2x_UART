@@ -170,18 +170,18 @@ class Wheel:
         #self.__joystick.__init__(0)
         #self.__joystick.init()
         pygame.joystick.init()
-
+        
         self.__joystick = Joystick(0)
-
+        self.__joystick.init()
         self.explicit_data = {  
-                            DIC_KEY_AXIS: [0 for i in range(self.__joystick.get_numaxes())],
-                            DIC_KEY_BUTTON: [0 for i in range(self.__joystick.get_numbuttons())],
-                            DIC_KEY_HAT: [0 for i in range(self.__joystick.get_numhats())]}
+                            DIC_KEY_AXIS: [0 for _ in range(self.__joystick.get_numaxes())],
+                            DIC_KEY_BUTTON: [0 for _ in range(self.__joystick.get_numbuttons())],
+                            DIC_KEY_HAT: [0 for _ in range(self.__joystick.get_numhats())]}
 
         self.compact_data = {
-                            DIC_KEY_AXIS: [0 for i in range(self.__joystick.get_numaxes())],
-                            DIC_KEY_BUTTON: [0 for i in range(int(math.ceil(self.__joystick.get_numbuttons() / 8)))],
-                            DIC_KEY_HAT: [0 for i in range(int(math.ceil(self.__joystick.get_numhats() / 2)))]
+                            DIC_KEY_AXIS: [0 for _ in range(self.__joystick.get_numaxes())],
+                            DIC_KEY_BUTTON: [0 for _ in range(int(math.ceil(self.__joystick.get_numbuttons() / 8)))],
+                            DIC_KEY_HAT: [0 for _ in range(int(math.ceil(self.__joystick.get_numhats() / 2)))]
                             }  
 
     def read_buttons(self):
