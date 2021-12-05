@@ -201,11 +201,12 @@ class Transmission:
                 
                 for i in range(len(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
                     self.payload += str(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
-            else:
-                print(argument_lst)                   
+            else:           
                 index_str = ''.join(argument_lst)
                 index = int(index_str)
                 self.payload = cmd_detail.upper() + index_str + self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+                print(self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index])
+
                 #self.payload += self.wheel.explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
             self.is_data_requested = True
         else:
