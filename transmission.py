@@ -105,7 +105,8 @@ class Transmission:
         return self.serial.readline() 
     
     def _treat_data_in(self, data):
-        
+        if DEBUG:
+            print("Treating Data: " + data)
         if not self._is_valid_start(data):
             self._log_error("bad start")
 
