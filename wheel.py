@@ -9,160 +9,6 @@ HAT_DIRECTION_LEFT = 'W'
 HAT_DIRECTION_RIGHT = 'E'
 HAT_DIRECTION_NONE = '-'
 
-'''
-#only for testing
-class Joystick_Simulation:
-    def __init__(self):
-        print("---------------------")
-        print("No joystick connected")
-        print("Simulating one for testing purposes")
-        print("---------------------")
-        self.attr = \
-            {
-                "init": True,
-                "id": 0,
-                "instance_id": 0,
-                "guid": "123456",
-                "power_level": "HIGH",
-                "name": "Logitech G27 Wheel",
-                "numaxes": 2,
-                "axis": [-.5, -.5],
-                "numballs": 0,
-                "ball": None,
-                "numbuttons": 16,
-                "button": [0,1,1,1,0,1,0,0,0,1,0,1,0,1,1,0],
-                "numhats": 1,
-                "hat": (1,0)
-            }
-
-    def init(self):
-        return None
-
-    def quit(self):
-        return None
-
-    def get_init(self):
-        return self.attr["init"]
-
-    def get_id(self):
-        return self.attr["id"]
-
-    def get_instance_id(self):
-        return self.attr["instance_id"]
-
-    def get_guid(self):
-        return self.attr["guid"]
-            
-    def get_power_level(self):
-        return self.attr["power_level"]
-
-    def get_name(self):
-        return self.attr["name"]
-
-    def get_numaxes(self):
-        return self.attr["numaxes"]
-
-    def get_axis(self, axis_number):
-        return self.attr["axis"][axis_number]
-    def get_numballs(self):
-        return self.attr["numballs"]
-
-    def get_ball(self, ball_number):
-        return self.attr["ball"][ball_number]
-
-    def get_numbuttons(self):
-        return self.attr["numbuttons"]
-
-    def get_button(self, button):
-        return self.attr["button"][button]
-
-    def get_numhats(self):
-        return self.attr["numhats"]
-
-    def get_hat(self, hat_number):
-        return self.attr["hat"]
-
-
-#x = Joystick_Simulation
-try:
-    print("try")
-    x = Joystick(0)
-except:
-    print("---------------------")
-    print("No joystick connected")
-    print("---------------------")
-    #only for testing
-    class Joystick_Simulation:
-        def __init__(self):
-                self.attr = \
-                {
-                    "init": True,
-                    "id": 0,
-                    "instance_id": 0,
-                    "guid": "123456",
-                    "power_level": "HIGH",
-                    "name": "Logitech G27 Wheel",
-                    "numaxes": 2,
-                    "axis": [.5, -.5],
-                    "numballs": 0,
-                    "ball": None,
-                    "numbuttons": 11,
-                    "button": [0,1,0,1,0,1,0,1,0,1,0],
-                    "numhats": 1,
-                    "get_hat": (1,-1)
-                }
-
-        def init(self):
-            return None
-
-        def quit(self):
-            return None
-
-        def get_init(self):
-            return self.attr["init"]
-
-        def get_id(self):
-            return self.attr["id"]
-
-        def get_instance_id(self):
-            return self.attr["instance_id"]
-
-        def get_guid(self):
-            return self.attr["guid"]
-            
-        def get_power_level(self):
-            return self.attr["power_level"]
-
-        def get_name(self):
-            return self.attr["name"]
-
-        def get_numaxes(self):
-            return self.attr["numaxes"]
-
-        def get_axis(self, axis_number):
-            return self.attr["axis"][axis_number]
-
-        def get_numballs(self):
-            return self.attr["numballs"]
-
-        def get_ball(self, ball_number):
-            return self.attr["ball"][ball_number]
-
-        def get_numbuttons(self):
-            return self.attr["numbuttons"]
-
-        def get_button(self, button):
-            return self.attr["button"][button]
-
-        def get_numhats(self):
-            return self.attr["numhats"]
-
-        def get_hat(self, hat_number):
-            return self.attr["hat_number"]
-
-
-    x = Joystick_Simulation()
-'''
 class Wheel:
 
 
@@ -258,3 +104,12 @@ class Wheel:
         self.get_hats()
         self.get_axes()
         self.get_buttons()
+
+    def get_num_axes(self):
+        return self.__joystick.get_numaxes()
+
+    def get_num_hats(self):
+        return self.__joystick.get_numhats()
+
+     def get_num_buttons(self):
+        return self.__joystick.get_numbuttons()

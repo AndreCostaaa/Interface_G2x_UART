@@ -193,20 +193,23 @@ class Transmission:
                 if DEBUG:
                     print(f"to the frequency {freq} Hz\n{self.time_between_comms=}")
         elif cmd == GET and self.mode == M_ON_REQUEST:
-
-            if argument_lst[0] == '9':
-
-                if DEBUG:
-                    print(f"Getting all {DATA_FROM_COMMANDS_DIC[cmd_detail]}")
-
-                self.payload = cmd_detail.upper() + ALL
+            if cmd_detail == NUMBER:
+                funcDic = {AXIS: self.wheel.get_num_axes, HAT: self.wheel.get_num_hats, BUTTON: self.wheel.get_num_buttons}
+                self.payload = cmd_detail.upper() + argument_lst[0] + str(funcDic())
                 
-                for i in range(len(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
-                    self.payload += str(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
-            else:           
-                index_str = ''.join(argument_lst)
-                index = int(index_str)
-                self.payload = cmd_detail.upper() + index_str +  self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+            else:
+                if argument_lst[0] == '9':
+                    if DEBUG:
+                        print(f"Getting all {DATA_FROM_COMMANDS_DIC[cmd_detail]}")
+
+                    self.payload = cmd_detail.upper() + ALL
+                    
+                    for i in range(len(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
+                        self.payload += str(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
+                else:           
+                    index_str = ''.join(argument_lst)
+                    index = int(index_str)
+                    self.payload = cmd_detail.upper() + index_str +  self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
             self.is_data_requested = True
         else:
             self._log_error("mode is auto")
