@@ -111,5 +111,5 @@ class Wheel:
     def get_num_hats(self):
         return self.__joystick.get_numhats()
 
-     def get_num_buttons(self):
+    def get_num_buttons(self):
         return self.__joystick.get_numbuttons()
