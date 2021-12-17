@@ -194,7 +194,7 @@ class Transmission:
                     print(f"to the frequency {freq} Hz\n{self.time_between_comms=}")
         elif cmd == GET and self.mode == M_ON_REQUEST:
             if cmd_detail == NUMBER:
-                funcDic = {AXIS: self.wheel.get_num_axes, HAT: self.wheel.get_num_hats, BUTTON: self.wheel.get_num_buttons}
+                funcDic = {AXIS: self.wheel.get_num_axes, HAT: self.wheel.get_num_hats, BUTTONS: self.wheel.get_num_buttons}
                 self.payload = cmd_detail.upper() + argument_lst[0] + str(funcDic())
                 
             else:
