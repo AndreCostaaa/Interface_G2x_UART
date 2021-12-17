@@ -195,7 +195,7 @@ class Transmission:
         elif cmd == GET and self.mode == M_ON_REQUEST:
             if cmd_detail == NUMBER:
                 funcDic = {AXIS: self.wheel.get_num_axes, HAT: self.wheel.get_num_hats, BUTTONS: self.wheel.get_num_buttons}
-                self.payload = cmd_detail.upper() + argument_lst[0] + str(funcDic())
+                self.payload = cmd_detail.upper() + argument_lst[0] + str(funcDic[argument_lst[0]]())
                 
             else:
                 if argument_lst[0] == '9':
