@@ -90,7 +90,8 @@ class Transmission:
             self.last_information_sent = time_now
 
     def _send_payload(self):
-        self.payload += '\n'
+        self.payload = START_CHAR + self.payload + '\n'
+        
         if type(self.payload) == str:
             self.payload = self.payload.encode('ascii')
         if DEBUG:
