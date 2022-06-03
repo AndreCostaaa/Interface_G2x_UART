@@ -14,23 +14,22 @@ T_EXPLICIT = 1
 
 TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION = 5000
 
-START_CHAR = ':'
-END_CHAR = '\n'
+START_CHAR = ":"
+END_CHAR = "\n"
 
 CMD_POSITION = 1
-CMD_DETAIL_POSITION = CMD_POSITION +1
-FIRST_ARG_POSITION = CMD_DETAIL_POSITION +1
+CMD_DETAIL_POSITION = CMD_POSITION + 1
+FIRST_ARG_POSITION = CMD_DETAIL_POSITION + 1
 
 ACK = [6]
 NACK = [21]
 
-MIN_FREQUENCY = 0.2 # 5 seconds
-MAX_FREQUENCY = 1000 # 10 ms
+MIN_FREQUENCY = 0.2  # 5 seconds
+MAX_FREQUENCY = 1000  # 10 ms
 
 
 class Transmission:
-
-    def __init__(self, wheel):    
+    def __init__(self, wheel):
         self.state = S_TRANSMITTING
         self.mode = M_ON_REQUEST
         self.type = T_EXPLICIT
@@ -54,30 +53,42 @@ class Transmission:
             payload = ""
             for key in self.wheel._explicit_data.keys():
                 for i in range(len(self.wheel._explicit_data[key])):
-                    payload += key[0].upper() + str(i) + str(self.wheel._explicit_data[key][i])
-            
+                    payload += (
+                        key[0].upper() + str(i) + str(self.wheel._explicit_data[key][i])
+                    )
+
         if self.type == T_COMPACT:
             payload = bytearray()
             for key in self.wheel.compact_data.keys():
                 for i in range(len(self.wheel.compact_data[key])):
                     payload.append(self.wheel.compact_data[key][i])
-        #payload += "\n"
+        # payload += "\n"
         self.payload = payload
 
     def handle_transmission(self, time_now):
         self.wheel.read_all()
         if self._is_new_data():
-            self._treat_data_in(self._read_data()) 
-        send_payload = False 
-                   
-        if self.state == S_WAITING and time_now - self.last_information_sent >= TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION:
-                print("Waiting for Connection")
-                self.payload = WAITING_OCTET
-                send_payload = True
+            self._treat_data_in(self._read_data())
+        send_payload = False
+
+        if (
+            self.state == S_WAITING
+            and time_now - self.last_information_sent
+            >= TIME_BETWEEN_DATA_TX_WHEN_WAITING_CONNECTION
+        ):
+            print("Waiting for Connection")
+            self.payload = WAITING_OCTET
+            send_payload = True
         elif self.state == S_TRANSMITTING:
-            if self.mode == M_AUTO and (time_now - self.last_information_sent) >= int(self.time_between_comms):
+            if self.mode == M_AUTO and (time_now - self.last_information_sent) >= int(
+                self.time_between_comms
+            ):
                 if DEBUG:
-                    print("Time since last tx: " + str(time_now - self.last_information_sent), end=" ")
+                    print(
+                        "Time since last tx: "
+                        + str(time_now - self.last_information_sent),
+                        end=" ",
+                    )
                 self._build_payload()
                 send_payload = True
 
@@ -90,26 +101,25 @@ class Transmission:
             self.last_information_sent = time_now
 
     def _send_payload(self):
-        self.payload = START_CHAR + self.payload + '\n'
-        
+        self.payload = START_CHAR + self.payload + "\n"
+
         if type(self.payload) == str:
-            self.payload = self.payload.encode('ascii')
+            self.payload = self.payload.encode("ascii")
         if DEBUG:
             print(f"Sending payload: {self.payload=}")
         self.serial.write(self.payload)
-    
+
     def _is_new_data(self):
         return self.serial.in_waiting > 0
-    
+
     def _read_data(self):
-        #waiting for the /n. Code will be blocked here for 1 sec max if we don't get it
-        return self.serial.readline().decode('ascii')
-    
+        # waiting for the /n. Code will be blocked here for 1 sec max if we don't get it
+        return self.serial.readline().decode("ascii")
+
     def _treat_data_in(self, data):
         if DEBUG:
             print("Treating Data: " + str(data))
 
-        
         if not self._is_valid_start(data):
             self._log_error("bad start")
 
@@ -120,7 +130,7 @@ class Transmission:
         if not self._is_valid_size(data):
             self._log_error("missing args")
             return -1
-        
+
         cmd, cmd_detail = data[CMD_POSITION].upper(), data[CMD_DETAIL_POSITION].upper()
 
         if not cmd in VALID_COMMANDS:
@@ -132,11 +142,11 @@ class Transmission:
             return -1
 
         argument_lst = self._get_args(data)
-        
+
         if cmd == SET:
             if cmd_detail == MODE:
                 if DEBUG:
-                    print(f"Changing mode: from {self.mode=}",end=" ")
+                    print(f"Changing mode: from {self.mode=}", end=" ")
 
                 arg = chr(argument_lst[0]).upper()
                 if arg == AUTO:
@@ -154,7 +164,7 @@ class Transmission:
 
             elif cmd_detail == TYPE:
                 if DEBUG:
-                    print(f"Changing type: from {self.type=}",end=" ")
+                    print(f"Changing type: from {self.type=}", end=" ")
 
                 arg = chr(argument_lst[0]).upper()
 
@@ -171,55 +181,85 @@ class Transmission:
 
             elif cmd_detail == SPEED:
                 if DEBUG:
-                    print(f"Changing speed: from {1 / self.time_between_comms * 1000} Hz",end=" ")
-                
+                    print(
+                        f"Changing speed: from {1 / self.time_between_comms * 1000} Hz",
+                        end=" ",
+                    )
+
                 arg_lst_len = len(argument_lst)
                 freq = 0
-                
+
                 for i in argument_lst:
                     i = int(i)
-                    freq += (i - ord('0')) * (10 ** (arg_lst_len - i - 1))
+                    freq += (i - ord("0")) * (10 ** (arg_lst_len - i - 1))
 
-                #If we receive if we get 0001, f = 0.001
-                if argument_lst[0] - ord('0') == 0:
-                    freq /= 10 ** arg_lst_len
-                
+                # If we receive if we get 0001, f = 0.001
+                if argument_lst[0] - ord("0") == 0:
+                    freq /= 10**arg_lst_len
+
                 if freq == 0:
                     self.time_between_comms = 1 / MIN_FREQUENCY
                 elif freq > MAX_FREQUENCY:
                     self.time_between_comms = 1 / MAX_FREQUENCY
                 else:
-                    self.time_between_comms = 1 / freq *1000 #ms
+                    self.time_between_comms = 1 / freq * 1000  # ms
 
                 if DEBUG:
                     print(f"to the frequency {freq} Hz\n{self.time_between_comms=}")
         elif cmd == GET and self.mode == M_ON_REQUEST:
             if cmd_detail == NUMBER:
-                funcDic = {AXIS: self.wheel.get_num_axes, HAT: self.wheel.get_num_hats, BUTTONS: self.wheel.get_num_buttons}
-                self.payload = cmd_detail.upper() + argument_lst[0] + str(funcDic[argument_lst[0]]())
-                
+                funcDic = {
+                    AXIS: self.wheel.get_num_axes,
+                    HAT: self.wheel.get_num_hats,
+                    BUTTONS: self.wheel.get_num_buttons,
+                }
+                self.payload = (
+                    cmd_detail.upper()
+                    + argument_lst[0]
+                    + str(funcDic[argument_lst[0]]())
+                )
+
             else:
-                if argument_lst[0] == '9':
+                if argument_lst[0] == "9":
                     if DEBUG:
                         print(f"Getting all {DATA_FROM_COMMANDS_DIC[cmd_detail]}")
 
                     self.payload = cmd_detail.upper() + ALL
-                    
-                    for i in range(len(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]])):
-                        self.payload += str(self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][i])      
-                else:           
-                    index_str = ''.join(argument_lst)
+
+                    for i in range(
+                        len(
+                            self.wheel._explicit_data[
+                                DATA_FROM_COMMANDS_DIC[cmd_detail]
+                            ]
+                        )
+                    ):
+                        self.payload += str(
+                            self.wheel._explicit_data[
+                                DATA_FROM_COMMANDS_DIC[cmd_detail]
+                            ][i]
+                        )
+                else:
+                    index_str = "".join(argument_lst)
                     index = int(index_str)
-                    self.payload = cmd_detail.upper() + index_str +  self.wheel._explicit_data[DATA_FROM_COMMANDS_DIC[cmd_detail]][index]
+
+                    if index < len(DATA_FROM_COMMANDS_DIC[cmd_detail]):
+                        self.payload = (
+                            cmd_detail.upper()
+                            + index_str
+                            + self.wheel._explicit_data[
+                                DATA_FROM_COMMANDS_DIC[cmd_detail]
+                            ][index]
+                        )
+                    else:
+                        self._log_error("out of bounds")
             self.is_data_requested = True
         else:
             self._log_error("mode is auto")
             return -1
         return 0
 
-    
     def _log_error(self, detail):
-        data = "ERROR " + detail       
+        data = "ERROR " + detail
         if DEBUG:
             print(data)
         self.serial.write(NACK)
@@ -234,7 +274,7 @@ class Transmission:
     @staticmethod
     def _is_valid_end(data):
         return data[-1] == END_CHAR
-    
+
     @staticmethod
     def _is_valid_size(data):
         return len(data) - 2 > 2
@@ -242,7 +282,7 @@ class Transmission:
     @staticmethod
     def _get_argument_index(argument_number):
         return FIRST_ARG_POSITION + argument_number
-    
+
     @staticmethod
     def _get_args(data):
-        return data[FIRST_ARG_POSITION: -2 if data[-2] == '\r' else -1]
+        return data[FIRST_ARG_POSITION : -2 if data[-2] == "\r" else -1]
